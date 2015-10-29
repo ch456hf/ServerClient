@@ -286,18 +286,56 @@ void processpool<T>::run_parent()
 				if(ret <= 0) {
 					continue;
 				} else {
-					for(int i = 0; i < ret; ++ i)
+					for(int i = 0; i < ret; ++ i) {
+						switch(signals[i]) {
+							case SIGCHLD:
+							{
+								pid_t pid;
+								int stat;
+								while((pid = waitpid(-1, &stat, WNOHANG)) > 0) {
+									for(int i = 0; i < m_process_number; ++ i) {
+										if(m_sub_process[i].m_pid == pid) {
+											printf("child %d join\n", i);
+											close(m_sub_process[i].m_pipefd[0]);
+											m_sub_process[i].m_pid = -1;
+										}
+									}
+								}
+
+								m_stop = true;
+								for(int i = 0; i < m_process_number; ++ i) {
+									if(m_sub_process[i].m_pid != -1) {
+										m_stop = false;
+									}
+								}
+								break;
+							}
+							case SIGTERM:
+							case SIGINT:
+							{
+								printf("kill all the child now\n");
+								for(int i = 0; i < m_process_number; ++ i) {
+									int pid = m_sub_process[i].m_pid;
+									if(pid != -1) {
+										kill(pid, SIGTERM);
+									}
+								}
+								break;
+							}
+							default:
+							{
+								break;
+							}
+						}
+					}
 				}
+			}
+			else {
+				continue;
 			}
 		}
 	}
+	close(m_epollfd);
 }
-
-
-
-
-
-
-
 
 #endif
