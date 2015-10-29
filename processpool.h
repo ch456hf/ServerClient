@@ -30,7 +30,8 @@ template <typename T>
 class processpool
 {
 	private:
-		
+		processpool(int listenfd, int process_number = 8);
+	public:	
 		static processpool<T>* create(int listenfd, int process_number = 8)
 		{
 			if(!m_instance) {
@@ -188,7 +189,7 @@ void processpool<T>::run_child()
 			int sockfd = events[i].data.fd;
 			if((sockfd == pipefd) && (events[i].events & EPOLLIN)) {
 				int client = 0;
-				ret = recv(sockfd, (char *)&client, sizeof(client) < 0);
+				ret = recv(sockfd, (char *)&client, sizeof(client), 0);
 				if(((ret < 0) && (errno != EAGAIN)) || ret == 0) {
 					continue;
 				} else {
@@ -240,7 +241,7 @@ void processpool<T>::run_child()
 	delete []users;
 	users = NULL;
 	close(pipefd);
-	clase(m_epollfd);
+	close(m_epollfd);
 }
 
 template<typename T>
@@ -257,7 +258,7 @@ void processpool<T>::run_parent()
 	int ret = -1;
 
 	while(! m_stop) {
-		number = epoll_wait(m_epollfd, events, MAX_EVENT_NUMER, -1);
+		number = epoll_wait(m_epollfd, events, MAX_EVENT_NUMBER, -1);
 		if((number < 0) && (errno != EINTR)) {
 			printf("epoll failure\n");
 			break;
