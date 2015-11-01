@@ -12,11 +12,11 @@
 #include <sys/epoll.h>
 #include <signal.h>
 #include <sys/wait.h>
-#include <sys/stat.h">
+#include <sys/stat.h>
 
 #include "processpool.h"
 
-class cig_conn
+class cgi_conn
 {
 	public:
 		cgi_conn() {}
@@ -63,7 +63,7 @@ class cig_conn
 						removefd(m_epollfd, m_sockfd);
 						break;
 					}
-					ret = for();
+					ret = fork();
 					if(ret == -1) {
 						removefd(m_epollfd, m_sockfd);
 						break;
@@ -79,7 +79,7 @@ class cig_conn
 				}
 			}
 		}
-	privete:
+	private:
 		static const int BUFFER_SIZE = 1024;
 		static int m_epollfd;
 		int m_sockfd;
@@ -87,7 +87,7 @@ class cig_conn
 		char m_buf[BUFFER_SIZE];
 		int m_read_idx;
 };
-int cgi_conn::epollfd = -1;
+int cgi_conn::m_epollfd = -1;
 
 int main(int argc, char * argv[])
 {
@@ -119,9 +119,5 @@ int main(int argc, char * argv[])
 		delete pool;
 	}
 	close(listenfd);
-	return 0;
-}
-int main()
-{
 	return 0;
 }
