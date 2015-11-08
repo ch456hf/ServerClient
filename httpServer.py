@@ -11,7 +11,12 @@ Content-Type: text/html
 <html>
 <p>Wow, Python Server</p>
 <IMG src="test.jpg"/>
-</html>'''
+<form name="input" action="/" method="post">
+First name:<input type="text" name="firstname"><br>
+<input type="submit" value="Submit">
+</form> 
+</html>
+'''
 
 f = open('test.jpg', 'rb')
 pic_content = '''
@@ -40,4 +45,11 @@ while True:
 		print 'Connected by', addr
 		print 'Request is:', request
 		conn.sendall(content)
+	if method == 'POST':
+		form = request.split('\r\n')
+		idx = form.index('')
+		entry = form[idx:]
+
+		value = entry[-1].split('=')[-1]
+		conn.sendall(text_content + '\n <p>' + value + '</p>')
 	conn.close()
